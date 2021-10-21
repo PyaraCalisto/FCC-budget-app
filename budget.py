@@ -16,10 +16,11 @@ class Category:
         self.__balance = 0.0
 
     # Cria a função _repr_. A função é padrão e serve para 
-    # representar um objeto como string. A função __repr__()
-    # devolve os atributos em memória do objeto.
+    # representar um objeto como string/texto. Ao chamar print(),
+    # __repr__() devolve os atributos em memória do objeto.
     # A vantagem da função __repr__() é a possibilidade de
-    # reescrevê-la para corresponder à demanda.
+    # reescrevê-la para corresponder à demanda. O artificio \n
+    # é para o python reconhecer uma quebra de linha.
     def __repr__(self):
         header = self.description.center(30, "*") + "\n"
         ledger = ""
@@ -30,7 +31,10 @@ class Category:
             line_amount = "{:>7.2f}".format(item["amount"])
             # Cria uma nova variavel para receber as duas variaveis
             # anteriores e as formata dentro das especificações passadas.
-            ledger += "{}{}\n".format(line_description[:23], line_amount[:7])
+            ledger += f"{(line_description[:23])}{(line_amount[:7])}\n"
+            # O f antes de "" é outra forma de usar a função format()
+            # para formatar o texto. outra forma de escrever a linha:
+            # ledger += "{}{}\n".format(line_description[:23], line_amount[:7])
         total = "Total: {:.2f}".format(self.__balance)
         return header + ledger + total
 
@@ -61,11 +65,14 @@ class Category:
     # A condicional if usa a função withdraw em self
     # e usa a função deposit com base nos parametros
     # de category_instance, caso de certo retorna True
-    # e caso não funcione False. O f antes de "" é outra
-    # forma de usar a função format() para formatar o texto.
+    # e caso não funcione False.
     def transfer(self, amount, category_instance):
-        if self.withdraw(amount, "Transfer to {}".format(category_instance.description)):
-            category_instance.deposit(amount, f"Transfer from {(self.description)}")
+        if self.withdraw(amount, 
+          f"Transfer to {(category_instance.description)}"
+          ):
+            category_instance.deposit(amount, 
+            f"Transfer from {(self.description)}"
+            )
             return True
         else:
             return False
@@ -85,6 +92,9 @@ class Category:
 # Cria função create_spend_chart com atributo categories,
 # dentro da função cria uma lista spent_amounts vazia.
 # A função utiliza for para pegar o total gasto em cada categoria.
+# Usamos a função abs() para transformar em um número absoluto,
+# append() para apensar e round() para arredondar o valor usando
+# o segundo paremetro como número de digitos .
 def create_spend_chart(categories):
     spent_amounts = []
     for category in categories:
@@ -105,25 +115,37 @@ def create_spend_chart(categories):
 
     # Cabeçalho
     header = "Percentage spent by category\n"
-    # Cria o grafico e formata para apresentação.
+    # Cria o grafico e formata para apresentação. A função reversed()
+    # reverte a ordem de apresentação de um parametro. A função range()
+    # usa um parametro obrigatório (ponto de parada) e dois opcionais
+    # (onde começar e quais intervalos). No caso estamos pedindo para
+    # começar no zero, terminar no 101 e pular de 10 em 10.
+    # A função str() usa os valores criados no for e justifica à
+    # direita com .rjust() acrescentando | ao final do número.
     chart = ""
     for value in reversed(range(0, 101, 10)):
         chart += str(value).rjust(3) + '|'
+        # Usa a interação for para verificar se a variavel
+        # spent_percentage corresponde à value, caso sim
+        # marca um o e caso não deixa deixa vazio. 
         for percent in spent_percentage:
             if percent >= value:
                 chart += " o "
             else:
                 chart += "   "
         chart += " \n"
-
+    # Cria uma variável para acrescentar - antes das categorias.
+    # Usamos a função len() para usar como referencia quantas
+    # categorias forem adicionadas e assim não fazer a mais ou menos.
     footer = "    " + "-" * ((3 * len(categories)) + 1) + "\n"
 
     descriptions = list(map(lambda category: category.description, categories))
-
     max_length = max(map(lambda description: len(description), descriptions))
-
     descriptions = list(map(lambda description: description.ljust(max_length), descriptions))
     
+    # Usa a iteração for para percorrer a função zip() de todas
+    # variaveis descriptions criando tuples com seus resultados.
+    # Depois usamos a função join() para juntar esses resultados.
     for x in zip(*descriptions):
         footer += "    " + "".join(map(lambda s: s.center(3), x)) + " \n"
 
